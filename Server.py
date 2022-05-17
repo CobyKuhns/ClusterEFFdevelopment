@@ -1,5 +1,6 @@
 import socket
 import threading
+import datetime
 
 HOST = "192.168.5.97"
 PORT = 42069
@@ -18,11 +19,12 @@ def acceptConnections():
         name = name.decode()
         connection = (name, conn)
         connections.append(connection)
+        sendUserList()
         t1 = threading.Thread(target=receiveMessages, args=(connection,))
         receivingThreads.append(t1)
         # calls the last thread in the list
         receivingThreads[len(receivingThreads) - 1].start()
-        messageQueue.append(("SERVER",  "{} has joined the ClusterFuck!\n".format(name)))
+        messageQueue.append(("SERVER",  "{} has joined the ClusterEFF. Welcome!\n".format(name)))
 
 
 def receiveMessages(conn):
@@ -51,14 +53,23 @@ def receiveMessages(conn):
 def sendMessages():
     while True:
         if messageQueue:
+            now = datetime.datetime.now()
+            now = now.strftime("%m/%d/%Y %I:%M%p")
             data = messageQueue[0]
             print(data)
-            message = "{}: {}".format(messageQueue[0][0],messageQueue[0][1])
+            message = "{} {}: {}".format(now, messageQueue[0][0],messageQueue[0][1])
             messageQueue.pop(0)
             for conn in connections:
                 if not conn[0] == data[0]:
                     conn[1].send(message.encode())
 
+def sendUserList():
+    userList = ":/UL"
+    for conn in connections:
+        userList = userList + conn[0] + ','
+    for conn in connections:
+        conn[1].sendall(userList.encode())
+        
 def privateMessage(name, message):
     userFound = False
     parse = message.split()
@@ -77,6 +88,8 @@ def removeConnection(name):
     for connection in connections:
         if connection[1] == name:
             connections.remove(connection)
+    sendUserList()
+    
 
 def main():
     t1 = threading.Thread(target=sendMessages)

@@ -13,21 +13,22 @@ global closeProgram
 closeProgram = False
 global s
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+global activeUsers
 
 def window():
     #Prompt the user for their name
     namePrompt()
     #create window and configure the settings
     window = tkinter.Tk()
-    window.title("ClusterFuck")
-    window.geometry("1000x700")
+    window.title("ClusterEFF")
+    window.geometry("950x580")
     winWidth = window.winfo_reqwidth()
     winwHeight = window.winfo_reqheight()
     posRight = int(window.winfo_screenwidth() / 2 - winWidth / 2)
     posDown = int(window.winfo_screenheight() / 2 - winwHeight / 2)
     #create the message Display
     displaytxt = tkinter.Text(window, height=30, width=100)
-    displaytxt.pack()
+    displaytxt.grid(row= 0, column= 0, pady =2, padx = 2)
     #Start the thread that handles message reception
     messageThread = threading.Thread(target=printMessages, args=(displaytxt,), daemon=True)
     messageThread.start()
@@ -35,19 +36,22 @@ def window():
     displaytxt.config(state= 'disabled')
     #Create the input text box
     inputtxt = tkinter.Text(window, height=5, width=100)
-    inputtxt.pack()
+    inputtxt.grid(row= 1, column= 0, pady =2, padx = 2)
     #bind enter to the sendMessage function
     window.bind('<Return>', lambda event, a=inputtxt: sendMessage(a))
     #Create button to send messages
     sendButton = tkinter.Button(window, text="Send", command=lambda: sendMessage(inputtxt))
-    sendButton.pack()
+    sendButton.grid(row= 1, column= 1, pady =2, sticky= "W")
+    global activeUsers
+    activeUsers = tkinter.Text(window, height = 10, width= 15)
+    activeUsers.grid(row = 0, column= 1, pady = 2, padx = 5, sticky= "NE")
     window.protocol("WM_DELETE_WINDOW", lambda: on_closing(window))
     window.mainloop()
 
 
 def sendMessage(inputtxt):
     now = datetime.datetime.now()
-    now = now.strftime("%m/%d/%Y %H:%M:%S")
+    now = now.strftime("%m/%d/%Y %I:%M%p")
     inp = inputtxt.get(1.0, "end-1c")
     messageList.append(now + " " + username + ": " + inp)
     s.sendall(str.encode(inp))
@@ -56,8 +60,33 @@ def sendMessage(inputtxt):
 def receiveMessages(conn):
     while True:
         data = conn.recv(1024)
-        messageList.append(data.decode())
-        print(data.decode())
+        data = data.decode()
+        identifier = data[0: 4]
+        print(identifier)
+        #Check for user list identifier
+        if identifier == ":/UL":
+            #send list to update active users function
+            updateUserList(data[4:])
+        else:
+            messageList.append(data)
+            print(data)
+        
+
+def updateUserList(userList):
+    time.sleep(.5)
+    global activeUsers
+    UserString = "Active Users:\n"
+    splitList = userList.split(',')
+    splitList.pop()
+    for item in splitList:
+        UserString = UserString + item + "\n"
+    activeUsers.config(state= "normal")
+    activeUsers.delete(1.0,"end")
+    activeUsers.insert(1.0, UserString)
+    activeUsers.config(state= "disabled")
+    print(UserString)
+
+    print(splitList)
 
 def namePrompt():
     windowWidth = 200
