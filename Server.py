@@ -11,24 +11,31 @@ messageQueue = []
 def acceptConnections():
     #Makes sure we don't go over ten connections
     while len(connections) <= 10:
+        #Sets up socket for client
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind((HOST, PORT))
         s.listen()
+        #Sets socket to variables and receives username from client
         conn, addr = s.accept()
         name = conn.recv(1024)
         name = name.decode()
+        #Makes a tuple from the connection and username, and appends this to the connections list
         connection = (name, conn)
         connections.append(connection)
+        #Sends user list to all clients
         sendUserList()
+        #Creates a message receiving thread for the connection in question, and adds it to the thread list
         t1 = threading.Thread(target=receiveMessages, args=(connection,))
         receivingThreads.append(t1)
         # calls the last thread in the list
         receivingThreads[len(receivingThreads) - 1].start()
+        #Sends an update to all members in chat
         messageQueue.append(("SERVER",  "{} has joined the ClusterEFF. Welcome!\n".format(name)))
 
 
 def receiveMessages(conn):
     while True:
+        #Receive message
         data = conn[1].recv(1024)
         if not data:
             messageQueue.append((conn[0], "Disconnected"))
@@ -36,6 +43,7 @@ def receiveMessages(conn):
             conn[1].close()
             break
         else:
+            #decode the
             message = data.decode()
             if message[:3] == "/pm":
                 if not privateMessage(conn[0], message):
