@@ -4,13 +4,15 @@ import tkinter
 import time
 import datetime
 
-HOST = "127.0.0.1"
+HOST = "192.168.5.97"
 PORT = 42069
 
 messageList = []
 username = ""
 global closeProgram
 closeProgram = False
+global s
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 def window():
     #Prompt the user for their name
@@ -79,6 +81,7 @@ def namePrompt():
     window.mainloop()
 
 def nameSend(entry1):
+    global s
     name = entry1[0].get()
     global username
     username = name
@@ -87,16 +90,18 @@ def nameSend(entry1):
     entry1[1].destroy()
 
 def printMessages(displaytxt):
+    messageListCompare = []
     while True:
         text = ""
         if messageList:
             for item in messageList:
                 text = text + item
-            displaytxt.config(state='normal')
-            displaytxt.delete(1.0,"end")
-            displaytxt.insert(1.0, text)
-            displaytxt.config(state= 'disabled')
-        time.sleep(1)
+        messageListCompare = messageList
+        displaytxt.config(state='normal')
+        displaytxt.delete(1.0,"end")
+        displaytxt.insert(1.0, text)
+        displaytxt.config(state= 'disabled')
+        time.sleep(.5)
 
 def on_closing(window):
     global closeProgram
@@ -105,13 +110,11 @@ def on_closing(window):
     closeProgram = True
     window.destroy()
 
+def main():
+    s.connect((HOST,PORT))
+    t2 = threading.Thread(target=receiveMessages, args=(s,), daemon= True)
+    t2.start()
+    window()
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((HOST,PORT))
-t1 = threading.Thread(target=window, daemon= True)
-t1.start()
-t2 = threading.Thread(target=receiveMessages, args=(s,), daemon= True)
-t2.start()
-while not closeProgram:
-    pass
-
+if __name__ == "__main__":
+    main()
