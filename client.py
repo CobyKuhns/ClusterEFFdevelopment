@@ -5,8 +5,8 @@ import time
 import datetime
 
 #Establish our global variables
-HOST = "192.168.5.97"
-PORT = 42069
+HOST = "135.134.128.16"
+PORT = 42060
 
 messageList = []
 username = ""
@@ -14,6 +14,7 @@ closeProgram = False
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 global activeUsers
 isChanged = False
+
 def window():
     #Prompt the user for their name
     namePrompt()

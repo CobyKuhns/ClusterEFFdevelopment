@@ -2,7 +2,7 @@ import socket
 import threading
 import datetime
 
-HOST = "192.168.5.97"
+HOST = "127.0.0.1"
 PORT = 42069
 connections = []
 receivingThreads = []
