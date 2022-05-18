@@ -6,7 +6,7 @@ import datetime
 
 #Establish our global variables
 HOST = "135.134.128.16"
-PORT = 42060
+PORT = 40060
 
 messageList = []
 username = ""
@@ -71,7 +71,7 @@ def receiveMessages(conn):
     #This function runs continuously, checking for new messages
     while True:
         data = conn.recv(1024)
-        data = data.decode()
+        data = data.decode("UTF_32", "ignore")
         identifier = data[0: 4]
         print(identifier)
         #Check for user list identifier
