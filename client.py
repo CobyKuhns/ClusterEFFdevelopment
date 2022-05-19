@@ -3,10 +3,9 @@ import threading
 import tkinter
 import time
 import datetime
-
+import os
+import sys
 #Establish our global variables
-HOST = "135.134.128.16"
-PORT = 40060
 
 messageList = []
 username = ""
@@ -62,7 +61,7 @@ def sendMessage(inputtxt):
     messageList.append(now + " " + username + ": " + inp)
     isChanged = True
     #Send the text to the server
-    s.sendall(str.encode(inp))
+    s.sendall(str.encode(inp, "UTF_32"))
     #Clear the box
     inputtxt.delete("1.0","end")
 
@@ -73,7 +72,6 @@ def receiveMessages(conn):
         data = conn.recv(1024)
         data = data.decode("UTF_32", "ignore")
         identifier = data[0: 4]
-        print(identifier)
         #Check for user list identifier
         if identifier == ":/UL":
             #send list to update active users function
@@ -81,7 +79,7 @@ def receiveMessages(conn):
         else:
             messageList.append(data)
             isChanged = True
-            print(data)
+            #TESTING: print(data)
         
 
 def updateUserList(userList):
@@ -141,7 +139,7 @@ def nameSend(pair):
     username = name
     # TESTING: print(name)
     #Send username to server
-    s.sendall(name.encode())
+    s.sendall(name.encode("UTF_32"))
     #Destroy the window
     pair[1].destroy()
 
@@ -163,13 +161,25 @@ def printMessages(displaytxt):
 def on_closing(window):
     #This function properly closes the connection to the server so that the server doesn't crash everytime someone leaves
     global closeProgram
-    s.send("/exit".encode())
+    s.send("/exit".encode("UTF_32"))
     s.close()
     window.destroy()
 
 def main():
+    hostPair = []
+    i = 0
+    with open(os.path.join(sys.path[0], "SETTINGS.txt"), "r") as f:
+        for line in f:
+            splitLine = line.split("=")
+            if i == 0:
+                splitLine[1] = splitLine[1].rstrip(splitLine[1][-1])
+                hostPair.append(splitLine[1])
+            else:
+                hostPair.append(int(splitLine[1]))
+            print(splitLine)
+            i += 1
     #This function connects to the server and starts up the receivingMessages thread, then runs window()
-    s.connect((HOST,PORT))
+    s.connect((hostPair[0],hostPair[1]))
     t2 = threading.Thread(target=receiveMessages, args=(s,), daemon= True)
     t2.start()
     window()
