@@ -19,7 +19,7 @@ def acceptConnections():
             #Sets socket to variables and receives username from client
             conn, addr = s.accept()
             name = conn.recv(1024)
-            name = name.decode()
+            name = name.decode("UTF_32")
             #Makes a tuple from the connection and username, and appends this to the connections list
             connection = (name, conn)
             connections.append(connection)
@@ -45,7 +45,7 @@ def receiveMessages(conn):
             break
         else:
             #decode the message and check if its a special case
-            message = data.decode()
+            message = data.decode("UTF_32")
             if message[:3] == "/pm":
                 #if its a privateMessage, try to send it, and tell the sender if the receiver cant be found
                 if not privateMessage(conn[0], message):
@@ -73,7 +73,7 @@ def sendMessages():
             messageQueue.pop(0)
             for conn in connections:
                 if not conn[0] == data[0]:
-                    conn[1].send(message.encode())
+                    conn[1].send(message.encode("UTF_32"))
 
 def sendUserList():
     #sends the UserList as a string separated by commas, and appends a special identifier to the front of the message
@@ -81,7 +81,7 @@ def sendUserList():
     for conn in connections:
         userList = userList + conn[0] + ','
     for conn in connections:
-        conn[1].sendall(userList.encode())
+        conn[1].sendall(userList.encode("UTF_32"))
         
 def privateMessage(name, message):
     userFound = False
