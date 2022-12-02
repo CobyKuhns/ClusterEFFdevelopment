@@ -168,6 +168,7 @@ def on_closing(window):
 def main():
     hostPair = []
     i = 0
+    #This section opens the settings file and reads the values set for host and port
     with open(os.path.join(sys.path[0], "SETTINGS.txt"), "r") as f:
         for line in f:
             splitLine = line.split("=")

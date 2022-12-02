@@ -1,14 +1,30 @@
 import socket
 import threading
 import datetime
+import os
+import sys
 
-HOST = "127.0.0.1"
-PORT = 42069
+#Setting Global Variables
 connections = []
 receivingThreads = []
 messageQueue = []
 
 def acceptConnections():
+    hostPair = []
+    i = 0
+    #This section opens the settings file and reads the values set for host and port
+    with open(os.path.join(sys.path[0], "SETTINGS.txt"), "r") as f:
+        for line in f:
+            splitLine = line.split("=")
+            if i == 0:
+                splitLine[1] = splitLine[1].rstrip(splitLine[1][-1])
+                hostPair.append(splitLine[1])
+            else:
+                hostPair.append(int(splitLine[1]))
+            print(splitLine)
+            i += 1
+    HOST = hostPair[0]
+    PORT = hostPair[1]
     #Makes sure we don't go over ten connections
     while True:
         if len(connections) < 10:
